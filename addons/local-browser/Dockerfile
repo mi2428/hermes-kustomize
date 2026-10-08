@@ -1,6 +1,7 @@
 ARG HERMES_BASE_IMAGE=nousresearch/hermes-agent:v2026.9.24@sha256:fca358f12efd65bfaaca05884166f15c0e2788375ca30d77061ac1ebc96452b7
 FROM ${HERMES_BASE_IMAGE}
 
+COPY addons/local-browser/patch_managed_browser.py /opt/hermes/bin/patch_managed_browser.py
 ARG TARGETARCH
 ENV AGENT_BROWSER_EXECUTABLE_PATH=/opt/hermes/browser/chrome
 RUN if [ "$TARGETARCH" != "amd64" ]; then \
@@ -17,6 +18,7 @@ RUN if [ "$TARGETARCH" != "amd64" ]; then \
     done \
  && chmod -R a+rX /opt/hermes/browser \
  && test -x "$AGENT_BROWSER_EXECUTABLE_PATH" \
+ && /opt/hermes/.venv/bin/python /opt/hermes/bin/patch_managed_browser.py \
  && SUDO_FORCE_REMOVE=yes apt-get purge --yes --auto-remove sudo \
  && install -d -m 0700 -o 10000 -g 10000 "$XDG_RUNTIME_DIR" \
  && rm -rf /var/lib/apt/lists/* /root/.agent-browser/browsers
