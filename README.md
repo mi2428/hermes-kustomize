@@ -53,4 +53,4 @@ For messaging, configure the selected channel in Hermes and put its token and us
 
 ## Verify
 
-`bash scripts/check.sh` lints shell/YAML, builds all Kustomize examples, and checks Kubernetes schemas. `bash scripts/smoke-managed.sh` uses the pinned image and dummy credentials to test config changes, API key rotation, persistent state, and dashboard authentication locally. Neither command deploys to a cluster; verify a real model turn and any selected channel after deployment.
+`bash scripts/check.sh` lints shell/YAML, builds all Kustomize examples, and checks Kubernetes schemas without deploying; verify your model and channels in the target environment.

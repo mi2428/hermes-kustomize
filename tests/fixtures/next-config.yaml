@@ -1,8 +1,0 @@
-model:
-  provider: custom
-  default: NEXT_MODEL
-  base_url: https://example.invalid/v1
-  key_env: MODEL_API_KEY
-web:
-  keyless_fallback: false
-  keyless_rescue: false

@@ -4,7 +4,7 @@ set -euo pipefail
 shellcheck -x -S warning scripts/*.sh
 bash -n scripts/*.sh
 shfmt -d -i 2 -ci scripts/*.sh
-yamllint base/*.yaml components/dashboard/*.yaml examples/basic/*.yaml examples/with-dashboard/*.yaml tests/fixtures/*.yaml
+yamllint base/*.yaml components/dashboard/*.yaml examples/basic/*.yaml examples/with-dashboard/*.yaml
 yq -r '.spec.template.spec.initContainers[0].command[2]' base/deployment.yaml |
   python3 -c 'import ast, sys; ast.parse(sys.stdin.read())'
 yq -r '.spec.template.spec.containers[0].readinessProbe.exec.command[2]' base/deployment.yaml |
