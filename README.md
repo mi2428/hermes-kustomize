@@ -3,6 +3,7 @@
 A reusable Kustomize deployment for the official [Hermes Agent](https://hermes-agent.nousresearch.com/docs/user-guide/docker) image. The base runs one persistent gateway with an authenticated, cluster-internal API. The [dashboard](components/dashboard/) is optional; model, search, channel, storage, and network choices belong to the consuming deployment.
 
 Optional: [DDGS-first web search router](addons/web-search-router/).
+Optional: [Git-owned SOUL.md](components/soul/) without managing user memory.
 
 ## Requirements
 
@@ -16,6 +17,8 @@ Optional: [DDGS-first web search router](addons/web-search-router/).
 | ConfigMap `hermes-managed` | Non-secret `config.yaml`, mounted at `/etc/hermes/config.yaml`. |
 | Secret `hermes-runtime` | `API_SERVER_KEY` (random, at least 16 characters) and provider/channel keys. |
 | ConfigMap `hermes-environment` | Optional non-secret image environment variables. |
+
+The optional `components/soul/` also expects a `hermes-soul` ConfigMap containing a non-empty `SOUL.md`. Generate it from a file in your consuming repository as shown in [`examples/with-soul/`](examples/with-soul/). On each rollout, the component atomically copies that file to `/opt/data/SOUL.md` as UID 10000; it never touches `memories/USER.md` or `MEMORY.md`.
 
 ## Deploy
 
