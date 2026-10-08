@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hermes
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hermes
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hermes
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      initContainers:
+        - name: validate-managed-config
+          image: nousresearch/hermes-agent:v2026.9.24@sha256:fca358f12efd65bfaaca05884166f15c0e2788375ca30d77061ac1ebc96452b7
+          command:
+            - /opt/hermes/.venv/bin/python
+            - -c
+            - |
+              import yaml
+
+              with open("/managed/config.yaml", encoding="utf-8") as file:
+                  config = yaml.safe_load(file)
+              if not isinstance(config, dict) or not config:
+                  raise SystemExit("Managed config must be a non-empty YAML mapping")
+          volumeMounts:
+            - name: managed
+              mountPath: /managed
+              readOnly: true
+      containers:
+        - name: hermes
+          image: nousresearch/hermes-agent:v2026.9.24@sha256:fca358f12efd65bfaaca05884166f15c0e2788375ca30d77061ac1ebc96452b7
+          args: [gateway, run]
+          env:
+            - name: API_SERVER_ENABLED
+              value: "true"
+            - name: API_SERVER_HOST
+              value: 0.0.0.0
+            - name: API_SERVER_PORT
+              value: "8642"
+            - name: HERMES_HOME
+              value: /opt/data
+            - name: HERMES_MANAGED_DIR
+              value: /etc/hermes
+            - name: API_SERVER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hermes-runtime
+                  key: API_SERVER_KEY
+          envFrom:
+            - configMapRef:
+                name: hermes-environment
+                optional: true
+            - secretRef:
+                name: hermes-runtime
+          ports:
+            - name: api
+              containerPort: 8642
+          startupProbe:
+            httpGet:
+              path: /health
+              port: api
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command:
+                - /opt/hermes/.venv/bin/python
+                - -c
+                - |
+                  import json
+                  import os
+                  import urllib.request
+
+                  request = urllib.request.Request(
+                      "http://127.0.0.1:8642/health/detailed",
+                      headers={"Authorization": "Bearer " + os.environ["API_SERVER_KEY"]},
+                  )
+                  with urllib.request.urlopen(request, timeout=4) as response:
+                      if json.load(response)["status"] != "ok":
+                          raise SystemExit(1)
+                  if os.environ.get("HERMES_DASHBOARD", "").lower() in ("1", "true", "yes"):
+                      port = os.environ.get("HERMES_DASHBOARD_PORT", "9119")
+                      with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/status", timeout=4) as response:
+                          dashboard = json.load(response)
+                      if dashboard.get("auth_required") is not True or not dashboard.get("auth_providers"):
+                          raise SystemExit(1)
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: api
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+            - name: managed
+              mountPath: /etc/hermes/config.yaml
+              subPath: config.yaml
+              readOnly: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: hermes-data
+        - name: managed
+          configMap:
+            name: hermes-managed

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hermes
+spec:
+  template:
+    spec:
+      containers:
+        - name: hermes
+          env:
+            - name: HERMES_DASHBOARD
+              value: "1"
+            - name: HERMES_DASHBOARD_HOST
+              value: 0.0.0.0
+            - name: HERMES_DASHBOARD_PORT
+              value: "9119"
+          ports:
+            - name: dashboard
+              containerPort: 9119

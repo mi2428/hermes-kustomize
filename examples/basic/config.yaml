@@ -1,0 +1,9 @@
+model:
+  provider: custom
+  default: REPLACE_WITH_MODEL_ID
+  base_url: https://example.invalid/v1
+  key_env: MODEL_API_KEY
+  api_mode: chat_completions
+web:
+  keyless_fallback: false
+  keyless_rescue: false
