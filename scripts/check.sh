@@ -7,11 +7,10 @@ shfmt -d -i 2 -ci scripts/*.sh
 hadolint addons/web-search-router/Dockerfile addons/local-browser/Dockerfile
 yamllint base/*.yaml components/dashboard/*.yaml components/soul/*.yaml components/local-browser/*.yaml addons/web-search-router/*.yaml addons/web-search-router/plugin/*.yaml examples/basic/*.yaml examples/with-dashboard/*.yaml examples/with-soul/*.yaml examples/with-search-router/*.yaml examples/with-local-browser/*.yaml examples/with-browser-and-search/*.yaml
 ruff check addons/web-search-router/plugin addons/web-search-router/test_provider.py
-ruff check addons/local-browser/patch_managed_browser.py
 ruff check --select ANN addons/web-search-router/plugin addons/web-search-router/test_provider.py
 ruff check --select D --ignore D107,D203,D213 addons/web-search-router/plugin
 ruff format --check addons/web-search-router/plugin addons/web-search-router/test_provider.py
-ruff format --check addons/local-browser/patch_managed_browser.py
+git apply --stat addons/local-browser/managed-browser.patch >/dev/null
 pyright -p addons/web-search-router/pyrightconfig.json
 for source in addons/web-search-router/plugin/*.py addons/web-search-router/test_*.py; do
   python3 -c 'import ast, pathlib, sys; ast.parse(pathlib.Path(sys.argv[1]).read_text())' "$source"

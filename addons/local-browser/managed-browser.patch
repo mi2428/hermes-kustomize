@@ -1,0 +1,15 @@
+diff --git a/tools/browser_tool_cloud.py b/tools/browser_tool_cloud.py
+--- a/tools/browser_tool_cloud.py
++++ b/tools/browser_tool_cloud.py
+@@ -123,9 +123,9 @@ def _resolve_cloud_provider_uncached() -> Optional[CloudBrowserProvider]:
+     _bt = _origin()
+     resolved: Optional[CloudBrowserProvider] = None
+     provider_key = None
+     try:
+-        from hermes_cli.config import read_raw_config
+-        browser_cfg = read_raw_config().get("browser", {})
++        from hermes_cli.config import load_config_readonly
++        browser_cfg = load_config_readonly().get("browser", {})
+         if isinstance(browser_cfg, dict) and "cloud_provider" in browser_cfg:
+             provider_key = normalize_browser_cloud_provider(browser_cfg.get("cloud_provider"))
+             if provider_key in ("local", "camofox"):
