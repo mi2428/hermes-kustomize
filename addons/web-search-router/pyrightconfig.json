@@ -1,0 +1,6 @@
+{
+  "include": ["plugin", "test_provider.py"],
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "standard",
+  "reportMissingImports": "none"
+}

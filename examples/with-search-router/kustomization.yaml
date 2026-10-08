@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - pvc.yaml
+components:
+  - ../../addons/web-search-router
+configMapGenerator:
+  - name: hermes-managed
+    files:
+      - config.yaml
+  - name: hermes-environment
+    literals:
+      - API_SERVER_MODEL_NAME=example-hermes
+images:
+  - name: nousresearch/hermes-agent
+    newName: hermes-agent-web-search-router
+    newTag: local

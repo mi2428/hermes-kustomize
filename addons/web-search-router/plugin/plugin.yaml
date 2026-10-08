@@ -1,0 +1,6 @@
+name: web-search-router
+version: 1.0.0
+description: Search with DDGS, then rotate across five keyed providers on rate limits.
+kind: backend
+provides_web_providers:
+  - web-search-router

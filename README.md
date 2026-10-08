@@ -2,6 +2,8 @@
 
 A reusable Kustomize deployment for the official [Hermes Agent](https://hermes-agent.nousresearch.com/docs/user-guide/docker) image. The base runs one persistent gateway with an authenticated, cluster-internal API. The [dashboard](components/dashboard/) is optional; model, search, channel, storage, and network choices belong to the consuming deployment.
 
+Optional: [DDGS-first web search router](addons/web-search-router/).
+
 ## Requirements
 
 - Kubernetes with a StorageClass (or a pre-provisioned persistent volume), `kubectl`, and Kustomize.
@@ -53,4 +55,4 @@ For messaging, configure the selected channel in Hermes and put its token and us
 
 ## Verify
 
-`bash scripts/check.sh` lints shell/YAML, builds all Kustomize examples, and checks Kubernetes schemas without deploying; verify your model and channels in the target environment.
+`bash scripts/check.sh` lints shell/Python/YAML, type-checks the add-on, builds all Kustomize examples, and checks Kubernetes schemas without deploying; verify your model and channels in the target environment.
