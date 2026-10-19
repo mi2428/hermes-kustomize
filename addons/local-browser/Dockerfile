@@ -1,4 +1,4 @@
-ARG HERMES_BASE_IMAGE=nousresearch/hermes-agent:v2026.9.24@sha256:fca358f12efd65bfaaca05884166f15c0e2788375ca30d77061ac1ebc96452b7
+ARG HERMES_BASE_IMAGE=nousresearch/hermes-agent:v0.22.2@sha256:36099926da316742423544e055d4734777105ffe6341873af5459b957d0c2919
 FROM ${HERMES_BASE_IMAGE}
 
 COPY addons/local-browser/managed-browser.patch /opt/hermes/bin/managed-browser.patch
