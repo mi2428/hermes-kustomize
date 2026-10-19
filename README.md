@@ -61,6 +61,6 @@ For messaging, configure the selected channel in Hermes and put its token and us
 - Keep one gateway per data volume. `Recreate` avoids overlapping Pods from this Deployment, but `ReadWriteOnce` is not a multi-writer lock. A PVC is not a backup: stop the gateway, back up all of `/opt/data` off-cluster, and test a restore before upgrading. Check the PV reclaim policy before deleting the claim.
 - The gateway's API can run tools, including shell commands in the Pod. `ClusterIP` is not an access-control boundary; restrict callers with a NetworkPolicy where appropriate. The official image needs its root-owned s6 bootstrap; do not replace its entrypoint or force `runAsNonRoot` without testing the image.
 
-## LICENSE
+## License
 
-[MIT](LICENSE).
+[Unlicense](LICENSE).
