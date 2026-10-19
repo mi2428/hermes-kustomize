@@ -11,6 +11,8 @@ RUN if [ "$TARGETARCH" != "amd64" ]; then \
  && apt-get update \
  && apt-get install --yes --no-install-recommends sudo=1.9.16p2-3+deb13u2 \
  && npm install --global --no-audit --no-fund --allow-scripts=agent-browser agent-browser@0.38.2 \
+ && test ! -e /usr/local/bin/agent-browser \
+ && ln -s "$(npm prefix -g)/bin/agent-browser" /usr/local/bin/agent-browser \
  && agent-browser install --with-deps \
  && mkdir -p /opt/hermes/browser \
  && for chrome in /root/.agent-browser/browsers/chrome-*/chrome /root/.agent-browser/browsers/chrome-*/chrome-linux64/chrome; do \
