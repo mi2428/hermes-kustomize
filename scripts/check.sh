@@ -23,7 +23,7 @@ yq -r '.spec.template.spec.initContainers[0].command[2]' components/soul/deploym
   shellcheck -s sh -
 yq -r '.spec.template.spec.containers[0].readinessProbe.exec.command[2]' base/deployment.yaml |
   python3 -c 'import ast, sys; ast.parse(sys.stdin.read())'
-yq -e 'select(.kind == "Deployment") | .spec.template.spec.initContainers[0].image == .spec.template.spec.containers[0].image and (.spec.template.spec.containers[0].image | test("@sha256:[0-9a-f]{64}$"))' base/deployment.yaml >/dev/null
+yq -e 'select(.kind == "Deployment") | .spec.template.spec.initContainers[0].image == .spec.template.spec.containers[0].image and (.spec.template.spec.containers[0].image | test(":latest$"))' base/deployment.yaml >/dev/null
 
 for path in base examples/basic examples/with-dashboard examples/with-soul examples/with-search-router examples/with-local-browser examples/with-browser-and-search; do
   kustomize build "$path" | kubeconform -strict -summary

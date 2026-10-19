@@ -4,7 +4,7 @@ Optional Hermes search provider: DDGS first; on rate limits, rotate across keyed
 
 ## Use
 
-See [`examples/with-search-router/`](../../examples/with-search-router/). The official image lacks `ddgs`: build `docker build -f addons/web-search-router/Dockerfile -t hermes-agent-web-search-router:local .`, publish the image, then pin **all** init and main containers to its digest. The example's `:local` tag is a placeholder.
+See [`examples/with-search-router/`](../../examples/with-search-router/). The official image lacks `ddgs`: build `docker build -f addons/web-search-router/Dockerfile -t hermes-agent-web-search-router:local .`, publish the image, then pin **all** init and main containers to its digest. The build defaults to `nousresearch/hermes-agent:latest`; set `--build-arg HERMES_BASE_IMAGE=...` to use a different Hermes image. The example's `:local` tag is a placeholder.
 
 Provide `BRAVE_SEARCH_API_KEY`, `TAVILY_API_KEY`, `EXA_API_KEY`, `FIRECRAWL_API_KEY`, and `PARALLEL_API_KEY` in the same-namespace `hermes-runtime` Secret. Set `web.search_backend: web-search-router`, `web.keyless_fallback: false`, and `web.keyless_rescue: false` in managed config. Missing keys prevent startup. Extraction is separate; the example uses Tavily and spends its shared credits.
 

@@ -21,7 +21,7 @@ The optional `components/soul/` also expects a `hermes-soul` ConfigMap containin
 
 Use [`examples/basic/`](examples/basic/) as a template for the PVC and config, **not as a working deployment**: replace its `example.invalid` endpoint and model ID, supply real credentials through your secret manager, and select a StorageClass if your cluster has no default. Do not commit plaintext credentials.
 
-Reference the base from your own overlay at a reviewed commit or immutable tag:
+Reference the base from your own overlay at a reviewed commit or immutable tag. The reusable manifests default to the upstream `nousresearch/hermes-agent:latest`; override it in your consuming overlay to pin a release or digest. Kustomize applies this image override to the gateway and the components' init containers too:
 
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -29,12 +29,16 @@ kind: Kustomization
 resources:
   - github.com/YOUR_ORG/hermes-kustomize/base?ref=YOUR_IMMUTABLE_REF
   - pvc.yaml
+images:
+  - name: nousresearch/hermes-agent
+    newName: registry.example/hermes-agent
+    digest: sha256:REPLACE_WITH_IMAGE_DIGEST
 configMapGenerator:
   - name: hermes-managed
     files: [config.yaml]
 ```
 
-Provide `hermes-runtime` separately. Add a `hermes-environment` ConfigMap for additional **non-secret** image variables if needed; the base already reads both resources. Then build and apply your overlay:
+Provide `hermes-runtime` separately. Add a `hermes-environment` ConfigMap for additional **non-secret** image variables if needed; the base already reads both resources. The mutable default is convenient for trying Hermes; pin a digest for a reproducible production rollout. Then build and apply your overlay:
 
 ```sh
 kubectl kustomize path/to/your/overlay
@@ -46,13 +50,17 @@ Authenticate API clients with `API_SERVER_KEY`; the agent is advertised at `http
 
 For messaging, configure the selected channel in Hermes and put its token and user allowlist in `hermes-runtime`. [Telegram long polling](https://hermes-agent.nousresearch.com/docs/user-guide/messaging/telegram#webhook-mode) and [Slack Socket Mode](https://hermes-agent.nousresearch.com/docs/user-guide/messaging/slack) need outbound internet access, not inbound NAT or an Ingress. Telegram webhook mode is different: it requires a public HTTPS endpoint.
 
-## Configuration and operations
+### Verify
+
+`bash scripts/check.sh` lints Dockerfiles/shell/Python/YAML, type-checks the add-on, builds all Kustomize examples, and checks Kubernetes schemas without deploying; verify your model and channels in the target environment.
+
+## Configuration and Operations
 
 - [`hermes-managed`](https://hermes-agent.nousresearch.com/docs/user-guide/managed-scope) pins only the YAML keys it contains; the writable `/opt/data/config.yaml`, persona, memory, and sessions stay on the PVC. The init container rejects syntactically invalid managed YAML. Set model and web backend choices in the consumer's config, and keep keys in the Secret. See [Hermes provider](https://hermes-agent.nousresearch.com/docs/integrations/providers) and [web search](https://hermes-agent.nousresearch.com/docs/user-guide/features/web-search) settings.
 - Hash-suffixed Kustomize-generated ConfigMaps restart the Pod when config changes. External stable-name ConfigMaps and updated Secrets need an explicit rollout restart; verify credentials afterward and avoid duplicate keys in the persisted `/opt/data/.env`.
 - Keep one gateway per data volume. `Recreate` avoids overlapping Pods from this Deployment, but `ReadWriteOnce` is not a multi-writer lock. A PVC is not a backup: stop the gateway, back up all of `/opt/data` off-cluster, and test a restore before upgrading. Check the PV reclaim policy before deleting the claim.
 - The gateway's API can run tools, including shell commands in the Pod. `ClusterIP` is not an access-control boundary; restrict callers with a NetworkPolicy where appropriate. The official image needs its root-owned s6 bootstrap; do not replace its entrypoint or force `runAsNonRoot` without testing the image.
 
-## Verify
+## LICENSE
 
-`bash scripts/check.sh` lints Dockerfiles/shell/Python/YAML, type-checks the add-on, builds all Kustomize examples, and checks Kubernetes schemas without deploying; verify your model and channels in the target environment.
+[MIT](LICENSE).
