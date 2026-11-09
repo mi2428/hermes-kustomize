@@ -4,13 +4,12 @@ set -euo pipefail
 shellcheck -x -S warning scripts/*.sh
 bash -n scripts/*.sh
 shfmt -d -i 2 -ci scripts/*.sh
-hadolint addons/web-search-router/Dockerfile addons/local-browser/Dockerfile
-yamllint base/*.yaml components/dashboard/*.yaml components/soul/*.yaml components/local-browser/*.yaml addons/web-search-router/*.yaml addons/web-search-router/plugin/*.yaml examples/basic/*.yaml examples/with-dashboard/*.yaml examples/with-soul/*.yaml examples/with-search-router/*.yaml examples/with-local-browser/*.yaml examples/with-browser-and-search/*.yaml
+hadolint addons/web-search-router/Dockerfile
+yamllint base/*.yaml components/dashboard/*.yaml components/soul/*.yaml addons/web-search-router/*.yaml addons/web-search-router/plugin/*.yaml examples/basic/*.yaml examples/with-dashboard/*.yaml examples/with-soul/*.yaml examples/with-search-router/*.yaml
 ruff check addons/web-search-router/plugin addons/web-search-router/test_provider.py
 ruff check --select ANN addons/web-search-router/plugin addons/web-search-router/test_provider.py
 ruff check --select D --ignore D107,D203,D213 addons/web-search-router/plugin
 ruff format --check addons/web-search-router/plugin addons/web-search-router/test_provider.py
-git apply --stat addons/local-browser/managed-browser.patch >/dev/null
 pyright -p addons/web-search-router/pyrightconfig.json
 for source in addons/web-search-router/plugin/*.py addons/web-search-router/test_*.py; do
   python3 -c 'import ast, pathlib, sys; ast.parse(pathlib.Path(sys.argv[1]).read_text())' "$source"
@@ -25,7 +24,7 @@ yq -r '.spec.template.spec.containers[0].readinessProbe.exec.command[2]' base/de
   python3 -c 'import ast, sys; ast.parse(sys.stdin.read())'
 yq -e 'select(.kind == "Deployment") | .spec.template.spec.initContainers[0].image == .spec.template.spec.containers[0].image and (.spec.template.spec.containers[0].image | test(":latest$"))' base/deployment.yaml >/dev/null
 
-for path in base examples/basic examples/with-dashboard examples/with-soul examples/with-search-router examples/with-local-browser examples/with-browser-and-search; do
+for path in base examples/basic examples/with-dashboard examples/with-soul examples/with-search-router; do
   kustomize build "$path" | kubeconform -strict -summary
 done
 
@@ -50,15 +49,6 @@ kustomize build examples/with-soul |
   yq -e 'select(.kind == "Deployment") | .spec.template.spec.initContainers[] | select(.name == "install-soul")' >/dev/null
 kustomize build examples/with-soul |
   yq -e 'select(.kind == "Deployment") | .spec.template.spec.volumes[] | select(.name == "soul" and (.configMap.name | test("^hermes-soul-")))' >/dev/null
-kustomize build examples/with-local-browser |
-  yq -e 'select(.kind == "Deployment") | .spec.template.spec.initContainers[] | select(.name == "validate-local-browser" and .image == "hermes-agent-local-browser:local")' >/dev/null
-kustomize build examples/with-local-browser |
-  yq -e 'select(.kind == "Deployment") | .spec.template.spec.containers[] | select(.name == "hermes") | .volumeMounts[] | select(.name == "browser-shm" and .mountPath == "/dev/shm")' >/dev/null
-kustomize build examples/with-browser-and-search |
-  yq -e 'select(.kind == "Deployment") | .spec.template.spec.initContainers[] | select(.name == "validate-local-browser" and .image == "hermes-agent-browser-search:local")' >/dev/null
-kustomize build examples/with-browser-and-search |
-  yq -e 'select(.kind == "Deployment") | .spec.template.spec.initContainers[] | select(.name == "validate-search-router" and .image == "hermes-agent-browser-search:local")' >/dev/null
-
 # The reusable base must never choose a model, search backend, or cluster.
 if kustomize build base | grep -Ei 'sakura|brave|kimi|example\.invalid|storageClassName|nodeSelector'; then
   exit 1
