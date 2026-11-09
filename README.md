@@ -17,8 +17,6 @@ A reusable Kustomize deployment for the official [Hermes Agent](https://hermes-a
 
 The optional `components/soul/` also expects a `hermes-soul` ConfigMap containing a non-empty `SOUL.md`. Generate it from a file in your consuming repository as shown in [`examples/with-soul/`](examples/with-soul/). On each rollout, the component atomically copies that file to `/opt/data/SOUL.md` as UID 10000; it never touches `memories/USER.md` or `MEMORY.md`.
 
-The official Hermes image already includes Chromium and the native `browser_exec` tool. No browser image add-on or component is needed. Configure local browsing and any environment-specific `/dev/shm` volume in the consuming overlay; keep the user's real browser profile disabled unless explicitly required. The independent [search router](addons/web-search-router/) remains optional.
-
 ## Deploy
 
 Use [`examples/basic/`](examples/basic/) as a template for the PVC and config, **not as a working deployment**: replace its `example.invalid` endpoint and model ID, supply real credentials through your secret manager, and select a StorageClass if your cluster has no default. Do not commit plaintext credentials.
